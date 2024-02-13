@@ -3,9 +3,11 @@ package;
 import flixel.FlxGame;
 import openfl.display.Sprite;
 import states.InitState;
+import flixel.FlxG;
 
 class Main extends Sprite
 {
+
 	var game = {
 		width: 1280,
 		height: 720,
@@ -24,5 +26,6 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
+		FlxG.save.bind('userdata', 'assets/user/');
 	}
 }

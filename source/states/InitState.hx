@@ -12,7 +12,6 @@ import states.MenuState;
 import states.SettingsState;
 import states.EditorState;
 
-
 class InitState extends FlxState
 {
 	var logoTween:FlxTween;
@@ -60,8 +59,8 @@ class InitState extends FlxState
 				option,
 				function(item:FlxSprite) coolTransition(item.ID),
 				null,
-				function(item:FlxSprite) FlxTween.tween(item.scale, {x: 1, y: 1}, 0.5, {ease: FlxEase.expoOut, type: FlxTween.FlxTweenType.ONESHOT}),
-				function(item:FlxSprite) FlxTween.tween(item.scale, {x: 0.9, y: 0.9}, 0.5, {ease: FlxEase.expoOut, type: FlxTween.FlxTweenType.ONESHOT}),
+				function(item:FlxSprite){optionSelected = item.ID; updateOptions();},
+				null,
 				false, true, false
 			);
 		});
@@ -77,11 +76,14 @@ class InitState extends FlxState
 			FlxMouseEvent.add(
 				option,
 				function(item:FlxSprite) coolTransition(item.ID), 
-				null, null, null, false, true, false
+				null,
+				function(item:FlxSprite) {optionSelected = item.ID; updateOptions();}, 
+				null,
+				false, true, false
 			);
 		});
 
-		
+		updateOptions();
 
 	}
 
@@ -131,13 +133,21 @@ class InitState extends FlxState
 
 	}
 
-	function updateText(){
+	function updateOptions(){
 		menuOptionsTxt.forEach(function(option:FlxText) {
 			FlxTween.cancelTweensOf(option.scale);
 
 			optionSelected == option.ID ? 
 			FlxTween.tween(option.scale, {x: 1.1, y: 1.1}, 0.7, {ease: FlxEase.expoOut}) :
 			FlxTween.tween(option.scale, {x: 1, y: 1}, 0.7, {ease: FlxEase.expoOut});
+		});
+
+		menuOptions.forEach(function(option:FlxSprite) {
+			FlxTween.cancelTweensOf(option.scale);
+
+			optionSelected == option.ID ?
+			FlxTween.tween(option.scale, {x: 1.1, y: 1.1}, 0.7, {ease: FlxEase.expoOut}) :
+			FlxTween.tween(option.scale, {x: 0.9, y: 0.9}, 0.7, {ease: FlxEase.expoOut});
 		});
 	}
 
@@ -148,12 +158,12 @@ class InitState extends FlxState
 		if(FlxG.keys.justPressed.SPACE || FlxG.keys.justPressed.ENTER) logoClicked ? coolTransition(optionSelected) : clickStart();
 		if(FlxG.keys.justPressed.DOWN && logoClicked == true){
 			optionSelected == 2 ? optionSelected = 0 : optionSelected++;
-			updateText();
+			updateOptions();
 		}
 		if (FlxG.keys.justPressed.UP && logoClicked == true)
 		{
 			optionSelected == 0 ? optionSelected = 2 : optionSelected--;
-			updateText();
+			updateOptions();
 		}
 	}
 }
