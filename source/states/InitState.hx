@@ -11,6 +11,7 @@ import flixel.group.FlxGroup;
 import states.MenuState;
 import states.SettingsState;
 import states.EditorState;
+import backend.Utilities;
 
 class InitState extends FlxState
 {
@@ -92,6 +93,9 @@ class InitState extends FlxState
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
 
 		super.create();
+
+		add(setBg());
+		add(bgDim(0.6));
 
 		menuOptions = new FlxTypedGroup<FlxSprite>();
 		add(menuOptions);

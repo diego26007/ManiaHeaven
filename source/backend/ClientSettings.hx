@@ -10,11 +10,11 @@ class ClientSettings {
         'note_right'    => [K, RIGHT],
 
         'accept'        => [ENTER, SPACE],
-        'cancel'        => [ESCAPE, null],
-        'restart'       => [SHIFT, null]
+        'cancel'        => [ESCAPE, NONE],
+        'restart'       => [SHIFT, NONE]
     ];
 
-    public var downscroll:Bool = false;
+    public var downscroll:Bool = false; //Self-explanatory
 
     public var scoreSettings:Array<Dynamic> = [
         true, //Whether to show score or not
@@ -35,6 +35,8 @@ class ClientSettings {
         true //Replace misses with FC grade when misses == 0
     ];
     public var healthSettings:Array<Dynamic> = [
-        true //Whether to display health or not
+        true, //Whether to display health or not
+        true, //Whether to display health amount or not
+        2 //Number of decimal places of the health amount
     ];
 }

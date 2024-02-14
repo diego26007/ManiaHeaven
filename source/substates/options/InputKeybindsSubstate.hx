@@ -1,6 +1,5 @@
 package substates.options;
 
-import backend.ClientSettings;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
@@ -10,8 +9,11 @@ import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil;
-import js.html.BinaryType;
+
 import states.SettingsState;
+
+import backend.ClientSettings;
+import backend.Utilities;
 
 class InputKeybindsSubstate extends FlxSubState
 {
@@ -32,8 +34,6 @@ class InputKeybindsSubstate extends FlxSubState
 	var optionSelected:Int = 0;
 	var lastOptionRelY = 0;
 
-	var bg:FlxSprite = new FlxSprite(0, 0);
-
 	function rebindKeybind(key:String, bind:Int)
 	{
 		var keyPressed = FlxG.keys.firstPressed();
@@ -47,13 +47,7 @@ class InputKeybindsSubstate extends FlxSubState
 
 	override public function create()
 	{
-		bg.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		FlxSpriteUtil.drawRect(bg, 0, 0, FlxG.width, FlxG.height, FlxColor.BLACK);
-		bg.alpha = 0.8;
-		add(bg);
-
-		var button = new FlxButton(0, 50, 'Si', function() close());
-		add(button);
+		add(bgDim(0.7));
 
 		optionNames = new FlxTypedGroup<FlxText>();
 		optionButtons = new FlxTypedGroup<FlxButton>();
@@ -108,7 +102,7 @@ class InputKeybindsSubstate extends FlxSubState
 
 	override public function update(elapsed)
 	{
-		if (FlxG.keys.justPressed.ESCAPE)
+		if (FlxG.keys.pressed.ESCAPE)
 		{
 			close();
 		}

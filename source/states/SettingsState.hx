@@ -5,13 +5,16 @@ import flixel.util.FlxColor;
 import flixel.FlxState;
 import flixel.FlxG;
 import flixel.ui.*;
-import states.MenuState;
 import flixel.text.*;
 import flixel.input.mouse.*;
 import flixel.group.FlxGroup;
 import flixel.tweens.*;
+
 import substates.options.*;
+
 import states.InitState;
+
+import backend.Utilities;
 
 class SettingsState extends FlxState
 {
@@ -35,6 +38,9 @@ class SettingsState extends FlxState
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
 
 		super.create();
+
+		add(setBg());
+		add(bgDim(0.7));
 
 		subStateClosed.add(InputKeybindsSubstate->openedSubstate = false);
 
