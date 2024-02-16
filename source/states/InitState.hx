@@ -8,9 +8,11 @@ import flixel.tweens.*;
 import flixel.input.mouse.*;
 import flixel.FlxState;
 import flixel.group.FlxGroup;
+
 import states.MenuState;
 import states.SettingsState;
 import states.EditorState;
+
 import backend.Utilities;
 
 class InitState extends FlxState

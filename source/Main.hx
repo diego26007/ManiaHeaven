@@ -19,6 +19,8 @@ class Main extends Sprite
 
 	public function new()
 	{
+		FlxG.resizeWindow(1280, 720);
+
 		super();
 
 		addChild(new FlxGame(game.width, game.height, game.initialState, game.framerate, game.skipSplash, game.startFullscreen));
