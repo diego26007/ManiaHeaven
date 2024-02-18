@@ -6,12 +6,27 @@ import flixel.util.FlxSpriteUtil;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 #if cpp import Sys.*; #end
-//#if html5 import js.html.*; #end
 import flixel.FlxSprite;
+import flixel.FlxState;
+
+import states.InitState;
 
 using StringTools;
 
-function setBg()
+typedef Note = {
+    var lane:Int;
+    var step:Float;
+    var sustainLength:Float;
+}
+
+typedef Section = Array<Note>;
+
+typedef Song = {
+    var sectionData:Array<Section>;
+    var initialBPM:Float;
+}
+
+function setBg(?filePath:String)
 {
     var bg:FlxTypedGroup<Dynamic> = new FlxTypedGroup<Dynamic>();
     var bgPhoto:FlxSprite = new FlxSprite(0, 0, null);
@@ -21,23 +36,25 @@ function setBg()
     var beatmapNameArray:Array<String> = [];
 
     #if sys
-    for (dir in sys.FileSystem.readDirectory('assets/beatmaps/')){
-        trace('found $dir');
-        if(sys.FileSystem.isDirectory('assets/beatmaps/$dir')){
-            trace('found dir $dir');
-            for(file in sys.FileSystem.readDirectory('assets/beatmaps/$dir/')){
-                trace('found $file');
-                if(!sys.FileSystem.isDirectory('assets/beatmaps/$dir/$file')){
-                    trace('found file $file');
-                    if(StringTools.endsWith(file, ".png") || StringTools.endsWith(file, ".jpg") || StringTools.endsWith(file, ".jpeg")) {
-                        trace('found valid file $file in $dir');
-                        beatmapNameArray.push(dir);
-                        imageArray.push('assets/beatmaps/$dir/$file');
+    if(filePath == null){
+        for (dir in sys.FileSystem.readDirectory('assets/beatmaps/')){
+            trace('found $dir');
+            if(sys.FileSystem.isDirectory('assets/beatmaps/$dir')){
+                trace('found dir $dir');
+                for(file in sys.FileSystem.readDirectory('assets/beatmaps/$dir/')){
+                    trace('found $file');
+                    if(!sys.FileSystem.isDirectory('assets/beatmaps/$dir/$file')){
+                        trace('found file $file');
+                        if(StringTools.endsWith(file, ".png") || StringTools.endsWith(file, ".jpg") || StringTools.endsWith(file, ".jpeg")) {
+                            trace('found valid file $file in $dir');
+                            beatmapNameArray.push(dir);
+                            imageArray.push('assets/beatmaps/$dir/$file');
+                        }
                     }
                 }
             }
         }
-    }
+    } else if(sys.FileSystem.exists(filePath)) imageArray.push(filePath);
     #end
 
     #if html5
@@ -70,4 +87,28 @@ function bgDim(opacity:Float, color:FlxColor = FlxColor.BLACK){
     dim.alpha = opacity;
 
     return dim;
+}
+
+class SoonTM extends FlxState {
+	override public function create()
+	{
+		super.create();
+
+        var soon:FlxText = new FlxText(0, 0, 0, 'SOON', 300);
+        soon.font = 'assets/fonts/vcr.ttf';
+        soon.screenCenter(XY);
+        add(soon);
+
+        var tm:FlxText = new FlxText(soon.y - 30, soon.x + soon.width, 0, 'TM', 70);
+        tm.font = 'assets/fonts/vcr.ttf';
+        tm.y = soon.y;
+        tm.x = soon.x + soon.width;
+        add(tm);
+	}
+
+	override public function update(elapsed:Float)
+	{
+		super.update(elapsed);
+        if(FlxG.keys.pressed.ESCAPE) FlxG.switchState(new InitState());
+	}
 }

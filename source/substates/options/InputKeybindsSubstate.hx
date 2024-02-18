@@ -1,5 +1,7 @@
 package substates.options;
 
+import backend.ClientSettings;
+import backend.Utilities;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
@@ -9,11 +11,7 @@ import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil;
-
 import states.SettingsState;
-
-import backend.ClientSettings;
-import backend.Utilities;
 
 class InputKeybindsSubstate extends FlxSubState
 {
@@ -39,11 +37,9 @@ class InputKeybindsSubstate extends FlxSubState
 		var keyPressed = FlxG.keys.firstPressed();
 		if (keyPressed != -1)
 		{
-			ClientSettings.keybinds.set(key,
-			    bind == 0 ? [keyPressed, ClientSettings.keybinds.get(key)[1]] : [ClientSettings.keybinds.get(key)[0], keyPressed]
-            );
+			ClientSettings.keybinds.set(key, bind == 0 ? [keyPressed, ClientSettings.keybinds.get(key)[1]] : [ClientSettings.keybinds.get(key)[0], keyPressed]);
 		}
-    }
+	}
 
 	override public function create()
 	{
@@ -59,6 +55,8 @@ class InputKeybindsSubstate extends FlxSubState
 			var option = new FlxText(0, 0, FlxG.width - 100, i[0]);
 			option.screenCenter(X);
 			option.font = 'assets/fonts/vcr.ttf';
+			option.borderStyle = FlxTextBorderStyle.OUTLINE;
+			option.borderSize = 6;
 			option.borderColor = FlxColor.BLACK;
 			if (i.length == 1)
 			{
@@ -69,20 +67,20 @@ class InputKeybindsSubstate extends FlxSubState
 			}
 			else
 			{
-                var optionButton1:FlxButton;
+				var optionButton1:FlxButton;
 				optionButton1 = new FlxButton(FlxG.width - 50 - 120 * 2 - 10, lastOptionRelY + 10,
-					FlxG.save != null ? ClientSettings.keybinds.get(i[1])[0].toString() : '', function(){
-                        rebindKeybind(i[1], 0);
-					    optionButton1.text = ClientSettings.keybinds.get(i[1])[0].toString();
-                    }
-                );
-                var optionButton2:FlxButton;
+					FlxG.save != null ? ClientSettings.keybinds.get(i[1])[0].toString() : '', function()
+				{
+					rebindKeybind(i[1], 0);
+					optionButton1.text = ClientSettings.keybinds.get(i[1])[0].toString();
+				});
+				var optionButton2:FlxButton;
 				optionButton2 = new FlxButton(FlxG.width - 50 - 120, lastOptionRelY + 10,
-					FlxG.save != null ? ClientSettings.keybinds.get(i[1])[1].toString() : '', function(){
-                        rebindKeybind(i[1], 1);
-                        optionButton2.text = ClientSettings.keybinds.get(i[1])[1].toString();
-                    }
-                );
+					FlxG.save != null ? ClientSettings.keybinds.get(i[1])[1].toString() : '', function()
+				{
+					rebindKeybind(i[1], 1);
+					optionButton2.text = ClientSettings.keybinds.get(i[1])[1].toString();
+				});
 				option.size = 40;
 				option.y = lastOptionRelY /*+ 40*/;
 				optionButton1.scale.y = 2;
@@ -97,6 +95,18 @@ class InputKeybindsSubstate extends FlxSubState
 			option.borderSize = option.size / 10;
 			optionNames.add(option);
 		}
+
+		var substateName = new FlxText(0, 10, 0, 'Input and Keybinds', 80);
+		substateName.borderStyle = FlxTextBorderStyle.OUTLINE;
+		substateName.font = 'assets/fonts/vcr.ttf';
+		substateName.borderSize = 6;
+		substateName.borderColor = FlxColor.BLACK;
+		substateName.color = 0x00EEFF;
+		substateName.screenCenter(X);
+		add(substateName);
+
+		optionNames.forEach(function(option) option.y += 110);
+		optionButtons.forEach(function(button) button.y += 110);
 		super.create();
 	}
 

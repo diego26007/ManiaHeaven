@@ -41,7 +41,7 @@ class InitState extends FlxState
 		menuOptionsTxt.forEach(function(option:FlxSprite){FlxTween.tween(option, {x: FlxG.width * 2 + 120}, 1, {ease: FlxEase.expoIn});});
 
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, false, function(){
-			FlxG.switchState(ID == 0 ? new MenuState() : ID == 1 ? new SettingsState() : ID == 2 ? new EditorState() : new InitState());
+			FlxG.switchState(ID == 0 ? /*new MenuState()*/ new SoonTM() : ID == 1 ? new SettingsState() : ID == 2 ? new EditorState() : new InitState());
 		});
 	}
 

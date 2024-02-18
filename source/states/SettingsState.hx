@@ -42,7 +42,7 @@ class SettingsState extends FlxState
 		add(setBg());
 		add(bgDim(0.7));
 
-		subStateClosed.add(InputKeybindsSubstate->openedSubstate = false);
+		subStateClosed.add(SubState->openedSubstate = false);
 
 		menuOptions = new FlxTypedGroup<FlxText>();
 		add(menuOptions);
@@ -88,7 +88,7 @@ class SettingsState extends FlxState
 
 	function openOptionSubstate(id){
 		switch(id){
-			case 1:
+			case 2:
 				openSubState(new InputKeybindsSubstate());
 			case 3:
 				FlxG.switchState(new InitState());
