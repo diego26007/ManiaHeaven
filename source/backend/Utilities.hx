@@ -1,5 +1,6 @@
 package backend;
 
+import openfl.Assets;
 import flixel.text.FlxText;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.util.FlxSpriteUtil;
@@ -36,25 +37,24 @@ function setBg(?filePath:String)
     var beatmapNameArray:Array<String> = [];
 
     #if sys
-    if(filePath == null){
-        for (dir in sys.FileSystem.readDirectory('assets/beatmaps/')){
-            trace('found $dir');
-            if(sys.FileSystem.isDirectory('assets/beatmaps/$dir')){
-                trace('found dir $dir');
-                for(file in sys.FileSystem.readDirectory('assets/beatmaps/$dir/')){
-                    trace('found $file');
-                    if(!sys.FileSystem.isDirectory('assets/beatmaps/$dir/$file')){
-                        trace('found file $file');
-                        if(StringTools.endsWith(file, ".png") || StringTools.endsWith(file, ".jpg") || StringTools.endsWith(file, ".jpeg")) {
-                            trace('found valid file $file in $dir');
-                            beatmapNameArray.push(dir);
-                            imageArray.push('assets/beatmaps/$dir/$file');
-                        }
+    for (dir in sys.FileSystem.readDirectory('assets/beatmaps/')){
+        trace('found $dir');
+        if(sys.FileSystem.isDirectory('assets/beatmaps/$dir')){
+            trace('found dir $dir');
+            for(file in sys.FileSystem.readDirectory('assets/beatmaps/$dir/')){
+                trace('found $file');
+                if(!sys.FileSystem.isDirectory('assets/beatmaps/$dir/$file')){
+                    trace('found file $file');
+                    if(StringTools.endsWith(file, ".png") || StringTools.endsWith(file, ".jpg") || StringTools.endsWith(file, ".jpeg")) {
+                        trace('found valid file $file in $dir');
+                        beatmapNameArray.push(dir);
+                        imageArray.push('assets/beatmaps/$dir/$file');
                     }
                 }
             }
         }
-    } else if(sys.FileSystem.exists(filePath)) imageArray.push(filePath);
+    }
+
     #end
 
     #if html5
@@ -64,16 +64,19 @@ function setBg(?filePath:String)
     trace('Image chosen: ${imageChosen + 1} out of ${imageArray.length}');
     bgPhoto.loadGraphic(imageArray[imageChosen]);
 
-    var ratioX = FlxG.width / bgPhoto.width;
-    var ratioY = FlxG.height / bgPhoto.height;
+    var ratioX = FlxG.width / (bgPhoto.width == 0 ? FlxG.width : bgPhoto.width);
+    var ratioY = FlxG.height / (bgPhoto.height == 0 ? FlxG.width : bgPhoto.height);
     var scaleToApply = Math.min(ratioX, ratioY);
     bgPhoto.scale.x = scaleToApply;
     bgPhoto.scale.y = scaleToApply;
+    bgPhoto.updateHitbox();
     bgPhoto.screenCenter(XY);
 
     #if sys bgText.text = 'Image from beatmap ${beatmapNameArray[imageChosen]}'; #end
     bgText.font = 'assets/fonts/vcr.ttf';
 
+    trace(bgPhoto);
+    trace(imageArray[imageChosen]);
     bg.add(bgPhoto);
     bg.add(bgText);
 

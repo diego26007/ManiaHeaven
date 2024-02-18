@@ -40,6 +40,8 @@ class EditorState extends FlxState
 
 	var time:Float = 0.0;
 
+	var difficultyRating:Float = 0.0;
+
 	var selectedBeatmap:String = '';
 	var selectedBeatmapInput:FlxTextInput = new FlxTextInput(800, 40, 300, '', 14);
 	var thisSong:FlxSound = new FlxSound();
@@ -103,6 +105,7 @@ class EditorState extends FlxState
 	function updateNotes(lane:Int, step:Float, square:FlxSprite)
 	{
 		var found:Bool = false;
+		var songLoaded:Bool = (thisSong.length != 0);
 		var ubication:Int = 0;
 		for (i in 0...sectionNotes.length)
 		{
@@ -143,12 +146,18 @@ class EditorState extends FlxState
 			}
 			renderedNotes.add(note);
 		}
+		if(songLoaded){
+			var notes:Int = 0;
+			for(section in sections) for(note in section) notes++;
+			difficultyRating = notes != 0 ? (notes / (thisSong.length / 1000) / 1.5) : 0;
+		}
 		trace(sectionNotes);
 	}
 
 	function copySection(fromSection:Int, toSection:Int){
 		if (sections.length <= toSection) for (i in 0...(toSection - sections.length + 1)) sections.push([]);
 		sections[toSection] = sections[fromSection];
+		swapSection(fromSection, toSection);
 	}
 
 	function updateSteps(newStepCrochet:Int){
@@ -181,9 +190,6 @@ class EditorState extends FlxState
 		trace('searching for \'$selectedBeatmap\'');
 		if(FileSystem.exists('assets/beatmaps/$selectedBeatmap')){
 			trace('found $selectedBeatmap');
-			bg = setBg('assets/beatmaps/$selectedBeatmap/bg.jpg');
-			if(bg.getFirst(function(item:FlxSprite){return(type is FlxSprite)}).){}
-			bg.draw();
 			for(file in FileSystem.readDirectory('assets/beatmaps/$selectedBeatmap/')){
 				if(!FileSystem.isDirectory('assets/beatmaps/$selectedBeatmap/$file') && (StringTools.endsWith(file, '.mp3') || StringTools.endsWith(file, '.ogg'))){
 					trace('found an mp3 file, called $file');
@@ -204,6 +210,11 @@ class EditorState extends FlxState
 						else sectionNotes = beatmapJsonData.sectionData[currentSection];
 						swapSection(currentSection, 0);
 						songBPMInput.value = beatmapJsonData.initialBPM;
+						var notes:Int = 0;
+						for (section in sections)
+							for (note in section)
+								notes++;
+						difficultyRating = notes / (thisSong.length / 1000) / 1.5;
 					} else {
 						//File.write('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json');
 						trace('creating new file');
@@ -225,6 +236,8 @@ class EditorState extends FlxState
 
 	var timeText = new FlxText(350, 80, 0, '', 12);
 
+	var difficultyText = new FlxText(350, 600, 0, '', 12);
+
 	var line:FlxSprite = new FlxSprite(180, 40);
 	var bg:FlxTypedGroup<Dynamic>;
 
@@ -232,16 +245,16 @@ class EditorState extends FlxState
 	{
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
 
-		bg = setBg('assets/beatmaps/$selectedBeatmap/bg.png');
-		add(bg);
-		add(bgDim(0.7));
-
 		add(steps);
 		updateSteps(stepCrochet);
 
 		var timeLabel = new FlxText(350, 60, 0, 'Time:', 12);
 		add(timeLabel);
 		add(timeText);
+
+		var difficultyLabel = new FlxText(350, 580, 0, 'Difficulty:', 12);
+		add(difficultyLabel);
+		add(difficultyText);
 
 		super.create();
 
@@ -254,6 +267,18 @@ class EditorState extends FlxState
 		var labelBPM:FlxText = new FlxText(songBPMInput.x - 90, songBPMInput.y, 90, 'BPM', 10);
 		add(songBPMInput);
 		add(labelBPM);
+
+		selectedDifficultyInput.textField.textColor = 0x000000;
+		selectedDifficultyInput.textField.background = true;
+		selectedDifficultyInput.textField.backgroundColor = 0xFFFFFF;
+		selectedDifficultyInput.textField.border = true;
+		selectedDifficultyInput.textField.borderColor = 0x2A2A2A;
+
+		selectedDifficultyInput.onChange.add(function() selectedDifficulty = selectedDifficultyInput.text);
+		selectedDifficultyInput.onFocusGained.add(function() beatmapInput = true);
+		selectedDifficultyInput.onFocusLost.add(function() beatmapInput = false);
+
+		add(selectedDifficultyInput);
 
 		selectedBeatmapInput.textField.textColor = 0x000000;
 		selectedBeatmapInput.textField.background = true;
@@ -280,6 +305,7 @@ class EditorState extends FlxState
 			sectionNotes = [];
 			sections = [[]];
 			swapSection(0, 0);
+			difficultyRating = 0;
 		}
 		var clearAllSectionsButton:FlxButton = new FlxButton(800, 100, 'Clear all Sections', function() clearSections());
 		clearAllSectionsButton.scale.x = 90 / clearAllSectionsButton.width;
@@ -360,6 +386,8 @@ class EditorState extends FlxState
 
 		timeText.text = '${Math.round(time) / 1000} / ${thisSong.length / 1000}';
 
+		difficultyText.text = '${Math.floor(difficultyRating * 100) / 100} stars';
+
 
 		if (FlxG.keys.justPressed.RIGHT){
 			if(FlxG.keys.pressed.CONTROL && stepCrochet < 128) updateSteps(stepCrochet * 2);
@@ -398,5 +426,7 @@ class EditorState extends FlxState
 				updateSustains(sectionNotes[sectionNotes.length - 1].lane, sectionNotes[sectionNotes.length - 1].step);
 			}
 		}
+		if (FlxG.keys.pressed.ESCAPE)
+			FlxG.switchState(new InitState());
 	}
 }
