@@ -29,8 +29,8 @@ class EditorState extends FlxState
 {
 	var editorSections:Array<String> = ["Song", "Beatmap Data", "Notes/Events"];
 
-	var sections:Array<Section> = [[]];
-	var sectionNotes:Section = [];
+	var sections:Array<Section> = [{sectionBeats: 4, sectionBPM: 60, sectionNotes: []}];
+	var sectionNotes:Section = {sectionBeats: 4, sectionBPM: 60, sectionNotes: []};
 	var renderedNotes:FlxTypedGroup<FlxSprite> = new FlxTypedGroup<FlxSprite>();
 	var renderedSustains:FlxTypedGroup<FlxSprite> = new FlxTypedGroup<FlxSprite>();
 	var stepCrochet:Int = 16;
@@ -55,7 +55,7 @@ class EditorState extends FlxState
 		trace('swapping section from $fromSection (currentSection set to $currentSection) to $toSection');
 		if (sections.length <= toSection)
 			for (i in 0...(toSection - sections.length + 1))
-				sections.push([]);
+				sections.push({sectionNotes: [], sectionBPM: songBPM, sectionBeats: 4});
 		sections[fromSection] = sectionNotes;
 		trace(sections);
 
@@ -67,20 +67,20 @@ class EditorState extends FlxState
 		time = toSection * (60 / songBPM) * 4000;
 		thisSong.time = time;
 
-		noteHitPlayBack = sectionNotes.copy();
+		noteHitPlayBack = sectionNotes.sectionNotes.copy();
 
-		if (sectionNotes.length != 0)
+		if (sectionNotes.sectionNotes.length != 0)
 		{
-			for (i in 0...sectionNotes.length)
+			for (i in 0...sectionNotes.sectionNotes.length)
 			{
 				var note = new FlxSprite(0, 0, 'assets/images/receptors/BlueArrow.png');
-				note.ID = sectionNotes[i].lane * 10000 + Std.int(sectionNotes[i].step * 100);
+				note.ID = sectionNotes.sectionNotes[i].lane * 10000 + Std.int(sectionNotes.sectionNotes[i].step * 100);
 				note.scale.x = 2.33;
-				note.scale.y = 2.33 * (Std.int(sectionNotes[i].lane) % 2 == 0 ? -1 : 1);
+				note.scale.y = 2.33 * (Std.int(sectionNotes.sectionNotes[i].lane) % 2 == 0 ? -1 : 1);
 				note.updateHitbox();
-				note.x = 180 + sectionNotes[i].lane * 40;
-				note.y = 30 + sectionNotes[i].step * 40;
-				switch (sectionNotes[i].lane)
+				note.x = 180 + sectionNotes.sectionNotes[i].lane * 40;
+				note.y = 30 + sectionNotes.sectionNotes[i].step * 40;
+				switch (sectionNotes.sectionNotes[i].lane)
 				{
 					case 0:
 						note.angle = 180;
@@ -93,7 +93,7 @@ class EditorState extends FlxState
 				}
 				renderedNotes.add(note);
 
-				updateSustains(sectionNotes[i].lane, sectionNotes[i].step);
+				updateSustains(sectionNotes.sectionNotes[i].lane, sectionNotes.sectionNotes[i].step);
 			}
 		}
 
@@ -107,25 +107,25 @@ class EditorState extends FlxState
 		var found:Bool = false;
 		var songLoaded:Bool = (thisSong.length != 0);
 		var ubication:Int = 0;
-		for (i in 0...sectionNotes.length)
+		for (i in 0...sectionNotes.sectionNotes.length)
 		{
-			if (sectionNotes[i].lane == lane && sectionNotes[i].step == step)
+			if (sectionNotes.sectionNotes[i].lane == lane && sectionNotes.sectionNotes[i].step == step)
 			{
 				found = true;
 				ubication = i;
 			}
-			trace('checking if ${[lane, step]} is ${sectionNotes[i]}... returned $found');
+			trace('checking if ${[lane, step]} is ${sectionNotes.sectionNotes[i]}... returned $found');
 		}
 		if (found)
 		{
-			sectionNotes.remove(sectionNotes[ubication]);
+			sectionNotes.sectionNotes.remove(sectionNotes.sectionNotes[ubication]);
 			renderedNotes.remove(renderedNotes.getFirst(function(note:FlxSprite) return (note.ID == lane * 10000 + Std.int(step * 100))));
 			renderedSustains.remove(renderedSustains.getFirst(function(sustain) return (sustain.ID == lane * 10000 + Std.int(step * 100))));
 		};
 		else
 		{
 			var newSectionNote:Note = {lane: lane, step: step, sustainLength: 0};
-			sectionNotes.push(newSectionNote);
+			sectionNotes.sectionNotes.push(newSectionNote);
 			var note = new FlxSprite(square.x, square.y, 'assets/images/receptors/BlueArrow.png');
 			note.ID = lane * 10000 + Std.int(step * 100);
 			note.scale.x = 2.33;
@@ -148,14 +148,14 @@ class EditorState extends FlxState
 		}
 		if(songLoaded){
 			var notes:Int = 0;
-			for(section in sections) for(note in section) notes++;
+			for(section in sections) for(note in section.sectionNotes) notes++;
 			difficultyRating = notes != 0 ? (notes / (thisSong.length / 1000) / 1.5) : 0;
 		}
 		trace(sectionNotes);
 	}
 
 	function copySection(fromSection:Int, toSection:Int){
-		if (sections.length <= toSection) for (i in 0...(toSection - sections.length + 1)) sections.push([]);
+		if (sections.length <= toSection) for (i in 0...(toSection - sections.length + 1)) sections.push({sectionNotes: [], sectionBPM: songBPM, sectionBeats: 4});
 		sections[toSection] = sections[fromSection];
 		swapSection(fromSection, toSection);
 	}
@@ -206,19 +206,19 @@ class EditorState extends FlxState
 						//trace(beatmapFileData.readString(beatmapFileData.readAll().length - 1));
 						var beatmapJsonData:Song = Json.parse(beatmapFileData.readAll().toString());
 						sections = beatmapJsonData.sectionData;
-						if(sections.length <= currentSection + 1) for(i in sections.length...(currentSection + 2)) sections[i] = [];
+						if(sections.length <= currentSection + 1) for(i in sections.length...(currentSection + 2)) sections[i] = {sectionNotes: [], sectionBPM: songBPM, sectionBeats: 4};
 						else sectionNotes = beatmapJsonData.sectionData[currentSection];
 						swapSection(currentSection, 0);
 						songBPMInput.value = beatmapJsonData.initialBPM;
 						var notes:Int = 0;
 						for (section in sections)
-							for (note in section)
+							for (note in section.sectionNotes)
 								notes++;
 						difficultyRating = notes / (thisSong.length / 1000) / 1.5;
 					} else {
 						//File.write('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json');
 						trace('creating new file');
-						File.saveContent('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json', '{"sectionData": [[]], "initialBPM": 60}');
+						File.saveContent('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json', '{"sectionData": [{"sectionNotes": [], "sectionBPM": 60, "sectionBeats": 4}], "initialBPM": 60}');
 					}
 				}
 			}
@@ -227,10 +227,8 @@ class EditorState extends FlxState
 
 	function save(){
 		var contentToSave:Song = {sectionData: sections, initialBPM: songBPM};
-		if (FileSystem.exists('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json')){
-			File.saveContent('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json', Json.stringify(contentToSave, null, "\t"));
-			trace('file saved. contents: ' + Json.stringify(contentToSave, null, "\t"));
-		}
+		File.saveContent('assets/beatmaps/$selectedBeatmap/beatmapData/$selectedDifficulty.json', Json.stringify(contentToSave, null, "\t"));
+		trace('file saved. contents: ' + Json.stringify(contentToSave, null, "\t"));
 	}
 	#end
 
@@ -243,6 +241,7 @@ class EditorState extends FlxState
 
 	override public function create()
 	{
+
 		FlxG.camera.fade(FlxColor.BLACK, 0.5, true);
 
 		add(steps);
@@ -302,8 +301,8 @@ class EditorState extends FlxState
 		add(renderedNotes);
 
 		function clearSections(){
-			sectionNotes = [];
-			sections = [[]];
+			sectionNotes = {sectionNotes: [], sectionBPM: songBPM, sectionBeats: 4};
+			sections = [{sectionNotes: [], sectionBPM: songBPM, sectionBeats: 4}];
 			swapSection(0, 0);
 			difficultyRating = 0;
 		}
@@ -335,7 +334,7 @@ class EditorState extends FlxState
 	function updateSustains(lane:Int, step:Float){
 		var correspondingSustain = renderedSustains.getFirst(function(sustain) return (sustain.ID == lane * 10000 + Std.int(step * 100)));
 		var correspondingNote:Note = {lane: -1, step: -1, sustainLength: 0};
-		for(i in sectionNotes) if(i.lane == lane && i.step == step){
+		for(i in sectionNotes.sectionNotes) if(i.lane == lane && i.step == step){
 			correspondingNote = i;
 		}
 		if(correspondingSustain == null){
@@ -354,7 +353,7 @@ class EditorState extends FlxState
 		}
 	}
 
-	var noteHitPlayBack:Section = [];
+	var noteHitPlayBack:Array<Note> = [];
 
 	override public function update(elapsed:Float)
 	{
@@ -404,7 +403,7 @@ class EditorState extends FlxState
 			} else #end if (thisSong != null) {
 				if (!thisSong.playing){
 					thisSong.play(false, time);
-					noteHitPlayBack = sectionNotes.copy();
+					noteHitPlayBack = sectionNotes.sectionNotes.copy();
 					for(i in noteHitPlayBack){
 						if ((i.step * ((60 / songBPM) * 4000 / 16)) < (time - (currentSection * 60 / songBPM * 4000))){
 							noteHitPlayBack.remove(i);
@@ -417,13 +416,13 @@ class EditorState extends FlxState
 			}
 		}
 		if (FlxG.keys.justPressed.E && !beatmapInput){
-			sectionNotes[sectionNotes.length - 1].sustainLength += (1/stepCrochet * 16);
-			updateSustains(sectionNotes[sectionNotes.length - 1].lane, sectionNotes[sectionNotes.length - 1].step);
+			sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].sustainLength += (1/stepCrochet * 16);
+			updateSustains(sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].lane, sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].step);
 		}
 		if (FlxG.keys.justPressed.Q && !beatmapInput){
-			if(Std.int(sectionNotes[sectionNotes.length - 1].sustainLength) >= (1/stepCrochet * 16)){
-				sectionNotes[sectionNotes.length - 1].sustainLength -= (1 / stepCrochet * 16);
-				updateSustains(sectionNotes[sectionNotes.length - 1].lane, sectionNotes[sectionNotes.length - 1].step);
+			if(Std.int(sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].sustainLength) >= (1/stepCrochet * 16)){
+				sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].sustainLength -= (1 / stepCrochet * 16);
+				updateSustains(sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].lane, sectionNotes.sectionNotes[sectionNotes.sectionNotes.length - 1].step);
 			}
 		}
 		if (FlxG.keys.pressed.ESCAPE)

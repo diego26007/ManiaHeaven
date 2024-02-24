@@ -7,7 +7,6 @@ import flixel.FlxG;
 
 class Main extends Sprite
 {
-
 	var game = {
 		width: 1280,
 		height: 720,
