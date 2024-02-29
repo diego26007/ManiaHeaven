@@ -91,6 +91,9 @@ class EditorState extends FlxState
 					case 3:
 						note.angle = 0;
 				}
+				var correspondingSquare = new FlxSprite();
+				FlxMouseEvent.add(note,
+					updateNotes(sectionNotes.sectionNotes[i].lane, sectionNotes.sectionNotes[i].step, ));
 				renderedNotes.add(note);
 
 				updateSustains(sectionNotes.sectionNotes[i].lane, sectionNotes.sectionNotes[i].step);
